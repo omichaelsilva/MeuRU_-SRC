@@ -2,7 +2,6 @@
 
 <p align="center">
   <img <img width="379" height="205" alt="image-1779123352176" src="https://github.com/user-attachments/assets/55d0bf73-eb3d-41fc-841e-12b79fda9689" />
- />
 </p>
 
 <p align="center">
