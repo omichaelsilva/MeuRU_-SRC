@@ -13,7 +13,7 @@
   <img src="https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white"/>
 </p>
 
-> Sistema web completo de gerenciamento de créditos e controle de acesso ao Restaurante Universitário da Universidade Federal de Catalão (UFCAT), desenvolvido com FastAPI, SQLAlchemy e Jinja2.
+> Sistema web completo de gerenciamento de créditos e controle de acesso ao Restaurante Universitário da Universidade Federal de Catalão (UFCAT), desenvolvido com FastAPI, SQLAlchemy e Jinja2. esse e um prototipo para um real sistema de creditos voltado ao Ru para melhorar o que diz respeito a praticidade e bom gerenciamento do mesmo. importante citar que esse e meu projeto de conclusao de curso na area de ciencias da computação pela UFCAT. 
 
 ---
 
