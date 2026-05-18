@@ -1,7 +1,7 @@
 # Sistema de Recarga e Gerenciamento de créditos digitais (RU) — UFCAT
 
 <p align="center">
-  <img <img width="1000" height="1000" alt="UFCAT_-_Identidade_Visual_Símbolo" src="https://github.com/user-attachments/assets/19ec9cbc-da2e-4b99-92d8-6f4a4806bae1" />
+  <img <img width="300" height="300" alt="UFCAT_-_Identidade_Visual_Símbolo" src="https://github.com/user-attachments/assets/19ec9cbc-da2e-4b99-92d8-6f4a4806bae1" />
 />
 </p>
 
