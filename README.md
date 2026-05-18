@@ -1,6 +1,7 @@
 # Sistema de Gestão do Restaurante Universitário (RU) — UFCAT
 
 <p align="center">
+ 
   <img src="Imagens/ufcat_logo.png" alt="UFCAT Logo" width="180"/>
 </p>
 
