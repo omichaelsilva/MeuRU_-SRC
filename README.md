@@ -1,4 +1,4 @@
-# Sistema de Gestão do Restaurante Universitário (RU) — UFCAT
+# Sistema de Recarga e Gerenciamento de créditos digitais (RU) — UFCAT
 
 <p align="center">
  
