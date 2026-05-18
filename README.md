@@ -1,8 +1,7 @@
 # Sistema de Recarga e Gerenciamento de créditos digitais (RU) — UFCAT
 
 <p align="center">
-  <img <<img width="379" height="205" alt="logo_meuru" src="https://github.com/user-attachments/assets/424a8591-55a2-46e4-80c5-eee54d0547c0" />
- />
+  <img img width="379" height="205" alt="logo_meuru" src="https://github.com/user-attachments/assets/424a8591-55a2-46e4-80c5-eee54d0547c0" />
 </p>
 
 <p align="center">
