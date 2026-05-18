@@ -1,0 +1,390 @@
+﻿{% extends "base.html" %}
+{% block title %}{{ aluno.nome }} — MEU RU{% endblock %}
+
+{% block body %}
+{% include "admin/_navbar.html" %}
+
+<main class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Cabeçalho -->
+    <div class="flex items-center gap-4 mb-6">
+        <a href="/admin/alunos" class="text-gray-400 hover:text-gray-600 text-sm">← Alunos</a>
+        <span class="text-gray-300">/</span>
+        <h1 class="text-2xl font-bold text-gray-800">{{ aluno.nome }}</h1>
+        {% if not aluno.ativo %}
+        <span class="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs font-medium">Inativo</span>
+        {% endif %}
+    </div>
+
+    <!-- Mensagens de feedback -->
+    {% if sucesso %}
+    <div id="msg-sucesso" class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm flex items-center gap-2">
+        ✅ {{ sucesso | replace('+', ' ') }}
+    </div>
+    {% endif %}
+    {% if erro %}
+    <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center gap-2">
+        ⚠️ {{ erro | replace('+', ' ') }}
+    </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Card perfil -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-sm font-medium text-gray-500 uppercase">Perfil</h2>
+                <button onclick="abrirModal('modal-editar')"
+                    class="text-xs font-semibold px-3 py-1.5 rounded-lg border transition"
+                    style="color: #F47920; border-color: #F4792033;"
+                    onmouseover="this.style.backgroundColor='#FFF5EE'"
+                    onmouseout="this.style.backgroundColor='transparent'">
+                    ✏️ Editar
+                </button>
+            </div>
+            <div class="space-y-3 text-sm">
+                <div>
+                    <p class="text-gray-400">Matrícula</p>
+                    <p class="font-semibold text-gray-800 font-mono">{{ aluno.matricula }}</p>
+                </div>
+                <div>
+                    <p class="text-gray-400">Nome</p>
+                    <p class="font-medium text-gray-700">{{ aluno.nome }}</p>
+                </div>
+                <div>
+                    <p class="text-gray-400">Email</p>
+                    <p class="font-medium text-gray-700">{{ aluno.email }}</p>
+                </div>
+                <div>
+                    <p class="text-gray-400">Telefone / WhatsApp</p>
+                    <p class="font-medium {% if aluno.telefone %}text-gray-700{% else %}text-gray-300{% endif %}">
+                        {{ aluno.telefone or 'Não informado' }}
+                    </p>
+                </div>
+                <div>
+                    <p class="text-gray-400">Cadastrado em</p>
+                    <p class="text-gray-700">{{ aluno.criado_em.strftime('%d/%m/%Y') }}</p>
+                </div>
+                <div>
+                    <p class="text-gray-400">Primeiro acesso pendente</p>
+                    <p class="{% if aluno.primeiro_acesso %}text-yellow-600{% else %}text-green-600{% endif %} font-medium">
+                        {% if aluno.primeiro_acesso %}Sim{% else %}Não{% endif %}
+                    </p>
+                </div>
+                <div>
+                    <p class="text-gray-400 mb-1">Categoria</p>
+                    <form method="POST" action="/admin/alunos/{{ aluno.id }}/categoria" class="flex gap-2 items-center">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <select name="categoria"
+                            class="flex-1 text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:border-orange-400"
+                            onchange="this.form.submit()">
+                            <option value="bolsista"   {% if aluno.categoria.value == 'bolsista'   %}selected{% endif %}>Bolsista — R$ 0,00</option>
+                            <option value="subsidiado" {% if aluno.categoria.value == 'subsidiado' %}selected{% endif %}>Subsidiado — R$ 4,00</option>
+                            <option value="aluno"      {% if aluno.categoria.value == 'aluno'      %}selected{% endif %}>Aluno — R$ 6,00</option>
+                            <option value="externo"    {% if aluno.categoria.value == 'externo'    %}selected{% endif %}>Externo — R$ 16,00</option>
+                        </select>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card saldo -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 class="text-sm font-medium text-gray-500 uppercase mb-4">Saldo</h2>
+            <p class="text-5xl font-bold mb-4" style="color: #F47920;">
+                R$ {{ creditos_formatado }}
+            </p>
+            <div class="flex flex-col gap-2">
+                <button onclick="abrirModal('modal-entrada')"
+                    class="w-full text-white font-medium py-2.5 rounded-lg transition text-sm flex items-center justify-center gap-2"
+                    style="background-color: #F47920;" onmouseover="this.style.backgroundColor='#D4640A'" onmouseout="this.style.backgroundColor='#F47920'">
+                    🍽️ Registrar Refeição
+                </button>
+                <button onclick="abrirModal('modal-recarga')"
+                    class="w-full bg-ru-green hover:bg-green-700 text-white font-medium py-2.5 rounded-lg transition text-sm flex items-center justify-center gap-2">
+                    ➕ Recarregar Créditos
+                </button>
+                <button onclick="abrirModal('modal-remocao')"
+                    class="w-full bg-ru-red hover:bg-red-700 text-white font-medium py-2.5 rounded-lg transition text-sm flex items-center justify-center gap-2">
+                    ➖ Remover Créditos
+                </button>
+            </div>
+        </div>
+
+        <!-- Card ações -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 class="text-sm font-medium text-gray-500 uppercase mb-4">Conta</h2>
+            <form method="POST" action="/admin/alunos/{{ aluno.id }}/toggle-ativo">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit"
+                    onclick="return confirm('{% if aluno.ativo %}Desativar{% else %}Ativar{% endif %} a conta de {{ aluno.nome }}?')"
+                    class="w-full {% if aluno.ativo %}bg-red-50 hover:bg-red-100 text-red-700 border border-red-200{% else %}bg-green-50 hover:bg-green-100 text-green-700 border border-green-200{% endif %} font-medium py-2.5 rounded-lg transition text-sm">
+                    {% if aluno.ativo %}🚫 Desativar Conta{% else %}✅ Reativar Conta{% endif %}
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Histórico de Refeições -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h2 class="font-semibold text-gray-800">Histórico de Refeições</h2>
+        </div>
+        {% if refeicoes %}
+        <div class="divide-y divide-gray-50">
+            {% for r in refeicoes %}
+            <div class="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm flex-shrink-0"
+                         style="background-color: #FFF0E0;">
+                        {% if r.tipo.value == 'almoco' %}🌞{% else %}🌙{% endif %}
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-gray-800">
+                            {% if r.tipo.value == 'almoco' %}Almoço{% else %}Jantar{% endif %}
+                        </p>
+                        <p class="text-xs text-gray-400">{{ r.data_hora.strftime('%d/%m/%Y às %H:%M') }}</p>
+                    </div>
+                </div>
+                <span class="text-sm font-bold" style="color: #E03D3D;">
+                    - R$ {{ "%.2f"|format(r.creditos_utilizados|float) | replace('.', ',') }}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+        {% if total_pag_ref > 1 %}
+        <div class="px-6 py-3 border-t flex justify-between text-sm text-gray-500">
+            <span>Pág. {{ pagina_ref }}/{{ total_pag_ref }}</span>
+            <div class="flex gap-2">
+                {% if pagina_ref > 1 %}
+                <a href="?pagina_ref={{ pagina_ref - 1 }}&pagina_rec={{ pagina_rec }}" class="text-ru-blue hover:underline">← Ant.</a>
+                {% endif %}
+                {% if pagina_ref < total_pag_ref %}
+                <a href="?pagina_ref={{ pagina_ref + 1 }}&pagina_rec={{ pagina_rec }}" class="text-ru-blue hover:underline">Próx. →</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        {% else %}
+        <p class="text-gray-400 text-sm text-center py-8">Nenhuma refeição registrada.</p>
+        {% endif %}
+    </div>
+
+    <!-- Histórico de Recargas -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h2 class="font-semibold text-gray-800">Histórico de Recargas/Remoções</h2>
+        </div>
+        {% if recargas %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="text-left px-6 py-3 text-gray-500 font-medium">Data/Hora</th>
+                        <th class="text-left px-6 py-3 text-gray-500 font-medium">Tipo</th>
+                        <th class="text-right px-6 py-3 text-gray-500 font-medium">Valor</th>
+                        <th class="text-left px-6 py-3 text-gray-500 font-medium hidden md:table-cell">Observação</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                    {% for r in recargas %}
+                    <tr class="{% if loop.index is odd %}bg-white{% else %}bg-gray-50{% endif %} hover:bg-blue-50 transition">
+                        <td class="px-6 py-3 text-gray-700">{{ r.data_hora.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td class="px-6 py-3">
+                            {% if r.tipo.value == 'recarga' %}
+                            <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs">➕ Recarga</span>
+                            {% elif r.tipo.value == 'remocao' %}
+                            <span class="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs">➖ Remoção</span>
+                            {% else %}
+                            <span class="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full text-xs">⚙️ Ajuste</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-3 text-right font-semibold {% if r.tipo.value == 'recarga' %}text-ru-green{% else %}text-ru-red{% endif %}">
+                            {% if r.tipo.value == 'recarga' %}+{% else %}-{% endif %}R$ {{ "%.2f"|format(r.valor|float) | replace('.', ',') }}
+                        </td>
+                        <td class="px-6 py-3 text-gray-500 text-xs hidden md:table-cell">{{ r.observacao or '—' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if total_pag_rec > 1 %}
+        <div class="px-6 py-3 border-t flex justify-between text-sm text-gray-500">
+            <span>Pág. {{ pagina_rec }}/{{ total_pag_rec }}</span>
+            <div class="flex gap-2">
+                {% if pagina_rec > 1 %}
+                <a href="?pagina_ref={{ pagina_ref }}&pagina_rec={{ pagina_rec - 1 }}" class="text-ru-blue hover:underline">← Ant.</a>
+                {% endif %}
+                {% if pagina_rec < total_pag_rec %}
+                <a href="?pagina_ref={{ pagina_ref }}&pagina_rec={{ pagina_rec + 1 }}" class="text-ru-blue hover:underline">Próx. →</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        {% else %}
+        <p class="text-gray-400 text-sm text-center py-8">Nenhuma recarga/remoção registrada.</p>
+        {% endif %}
+    </div>
+</main>
+
+<!-- Modal Registrar Entrada -->
+<div id="modal-entrada" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-2">🍽️ Registrar Refeição</h2>
+        <p class="text-gray-500 text-sm mb-5">Aluno: <strong class="text-gray-800">{{ aluno.nome }}</strong> — Saldo: <strong class="text-ru-green">R$ {{ creditos_formatado }}</strong></p>
+        <form method="POST" action="/admin/registrar-entrada/{{ aluno.id }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-gray-700 mb-3">Tipo de refeição</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="flex flex-col items-center gap-2 p-4 border-2 rounded-xl cursor-pointer transition has-[:checked]:border-orange-400 has-[:checked]:bg-orange-50 border-gray-200 hover:border-orange-200">
+                        <input type="radio" name="tipo" value="almoco" checked class="hidden">
+                        <span class="text-3xl">🌞</span>
+                        <span class="text-sm font-semibold text-gray-700">Almoço</span>
+                    </label>
+                    <label class="flex flex-col items-center gap-2 p-4 border-2 rounded-xl cursor-pointer transition has-[:checked]:border-orange-400 has-[:checked]:bg-orange-50 border-gray-200 hover:border-orange-200">
+                        <input type="radio" name="tipo" value="jantar" class="hidden">
+                        <span class="text-3xl">🌙</span>
+                        <span class="text-sm font-semibold text-gray-700">Jantar</span>
+                    </label>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button type="button" onclick="fecharModal('modal-entrada')"
+                    class="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                    Cancelar
+                </button>
+                <button type="submit" onclick="setLoading(this)"
+                    class="flex-1 py-2.5 text-white rounded-lg transition font-medium"
+                    style="background-color: #F47920;" onmouseover="this.style.backgroundColor='#D4640A'" onmouseout="this.style.backgroundColor='#F47920'">
+                    <span class="btn-text">Confirmar</span>
+                    <span class="btn-loading hidden">Processando...</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Editar Dados -->
+<div id="modal-editar" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-5">✏️ Editar Dados do Aluno</h2>
+        <form method="POST" action="/admin/alunos/{{ aluno.id }}/editar">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nome completo</label>
+                <input type="text" name="nome" value="{{ aluno.nome }}" required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
+                <input type="email" name="email" value="{{ aluno.email }}" required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none">
+            </div>
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Telefone / WhatsApp <span class="text-gray-400 font-normal">(opcional)</span>
+                </label>
+                <input type="tel" name="telefone" value="{{ aluno.telefone or '' }}"
+                    placeholder="(62) 99999-9999"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 outline-none">
+            </div>
+            <div class="flex gap-3">
+                <button type="button" onclick="fecharModal('modal-editar')"
+                    class="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                    Cancelar
+                </button>
+                <button type="submit" onclick="setLoading(this)"
+                    class="flex-1 py-2.5 text-white rounded-lg transition font-medium"
+                    style="background-color: #F47920;" onmouseover="this.style.backgroundColor='#D4640A'" onmouseout="this.style.backgroundColor='#F47920'">
+                    <span class="btn-text">Salvar alterações</span>
+                    <span class="btn-loading hidden">Salvando...</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Recarga -->
+<div id="modal-recarga" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4">➕ Adicionar Créditos</h2>
+        <form method="POST" action="/admin/alunos/{{ aluno.id }}/recarregar">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Valor (R$)</label>
+                <input type="text" name="valor" placeholder="0,00" required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ru-green outline-none text-lg font-semibold">
+            </div>
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Observação (opcional)</label>
+                <input type="text" name="observacao" placeholder="Ex: Recarga mensal"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ru-green outline-none">
+            </div>
+            <div class="flex gap-3">
+                <button type="button" onclick="fecharModal('modal-recarga')"
+                    class="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                    Cancelar
+                </button>
+                <button type="submit" onclick="setLoading(this)"
+                    class="flex-1 py-2.5 bg-ru-green text-white rounded-lg hover:bg-green-700 transition font-medium">
+                    <span class="btn-text">Confirmar</span>
+                    <span class="btn-loading hidden">Processando...</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Remoção -->
+<div id="modal-remocao" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-2">➖ Remover Créditos</h2>
+        <p class="text-gray-500 text-sm mb-4">Saldo atual: <strong class="text-ru-green">R$ {{ creditos_formatado }}</strong></p>
+        <form method="POST" action="/admin/alunos/{{ aluno.id }}/remover-creditos">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Valor (R$)</label>
+                <div class="flex gap-2 mb-2">
+                    <button type="button" onclick="document.getElementById('valor-remocao').value='4,00'"
+                        class="flex-1 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition">
+                        R$ 4,00
+                    </button>
+                    <button type="button" onclick="document.getElementById('valor-remocao').value='6,00'"
+                        class="flex-1 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition">
+                        R$ 6,00
+                    </button>
+                    <button type="button" onclick="document.getElementById('valor-remocao').value='16,00'"
+                        class="flex-1 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition">
+                        R$ 16,00
+                    </button>
+                </div>
+                <input type="text" id="valor-remocao" name="valor" placeholder="0,00" required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ru-red outline-none text-lg font-semibold">
+            </div>
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Motivo <span class="text-red-500">*</span></label>
+                <input type="text" name="observacao" placeholder="Motivo da remoção (obrigatório)" required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ru-red outline-none">
+            </div>
+            <div class="flex gap-3">
+                <button type="button" onclick="fecharModal('modal-remocao')"
+                    class="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                    Cancelar
+                </button>
+                <button type="submit" onclick="setLoading(this)"
+                    class="flex-1 py-2.5 bg-ru-red text-white rounded-lg hover:bg-red-700 transition font-medium">
+                    <span class="btn-text">Confirmar Remoção</span>
+                    <span class="btn-loading hidden">Processando...</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-hide mensagem de sucesso
+const msgSucesso = document.getElementById('msg-sucesso');
+if (msgSucesso) setTimeout(() => msgSucesso.remove(), 4000);
+</script>
+{% endblock %}

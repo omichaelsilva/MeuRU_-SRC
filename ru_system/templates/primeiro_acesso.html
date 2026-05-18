@@ -1,0 +1,175 @@
+﻿{% extends "base.html" %}
+{% block title %}Primeiro Acesso — MEU RU{% endblock %}
+
+{% block body %}
+<div class="min-h-screen flex items-center justify-center p-4" style="background-color: #1A1A1A;">
+    <div class="w-full max-w-lg">
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full shadow-lg mb-4">
+                <span class="text-4xl">🍽️</span>
+            </div>
+            <h1 class="text-3xl font-bold text-white">RU</h1>
+            <p class="text-blue-200 mt-1">Primeiro Acesso</p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-2xl p-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-2 text-center">Complete seu cadastro</h2>
+            <p class="text-gray-500 text-sm text-center mb-6">
+                Este é seu primeiro acesso. Preencha seus dados para continuar.
+            </p>
+
+            {% if erros %}
+            <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm space-y-1">
+                {% for e in erros %}
+                <div class="flex items-start gap-2"><span>⚠️</span> {{ e }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="POST" action="/primeiro-acesso" id="form-primeiro-acesso">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                <!-- Nome completo -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="nome">
+                        Nome completo
+                    </label>
+                    <input
+                        type="text"
+                        id="nome"
+                        name="nome"
+                        placeholder="Seu nome completo"
+                        required
+                        autofocus
+                        autocomplete="name"
+                        value="{{ form_nome or (aluno.nome if aluno.nome and aluno.nome != aluno.matricula else '') }}"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ru-blue outline-none transition text-gray-800"
+                    >
+                </div>
+
+                <!-- E-mail -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="email">
+                        E-mail
+                    </label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="seu@email.com"
+                        required
+                        autocomplete="email"
+                        value="{{ form_email or (aluno.email or '') }}"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ru-blue outline-none transition text-gray-800"
+                    >
+                </div>
+
+                <!-- Requisitos de senha -->
+                <div class="mb-4 p-3 bg-blue-50 rounded-lg text-sm text-gray-600">
+                    <p class="font-medium mb-2 text-gray-700">Requisitos da senha:</p>
+                    <ul class="space-y-1">
+                        <li id="req-len" class="flex items-center gap-2">
+                            <span class="req-icon">⬜</span> Mínimo 8 caracteres
+                        </li>
+                        <li id="req-upper" class="flex items-center gap-2">
+                            <span class="req-icon">⬜</span> Pelo menos 1 letra maiúscula
+                        </li>
+                        <li id="req-num" class="flex items-center gap-2">
+                            <span class="req-icon">⬜</span> Pelo menos 1 número
+                        </li>
+                        <li id="req-match" class="flex items-center gap-2">
+                            <span class="req-icon">⬜</span> Senhas coincidem
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Nova senha -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nova Senha</label>
+                    <div class="relative">
+                        <input
+                            type="password"
+                            id="nova_senha"
+                            name="nova_senha"
+                            placeholder="••••••••"
+                            required
+                            oninput="validarSenhaPA()"
+                            autocomplete="new-password"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ru-blue outline-none transition pr-12"
+                        >
+                        <button type="button" onclick="toggleSenha('nova_senha')"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                            👁️
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Confirmar senha -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Confirmar Senha</label>
+                    <div class="relative">
+                        <input
+                            type="password"
+                            id="confirmar_senha"
+                            name="confirmar_senha"
+                            placeholder="••••••••"
+                            required
+                            oninput="validarSenhaPA()"
+                            autocomplete="new-password"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ru-blue outline-none transition pr-12"
+                        >
+                        <button type="button" onclick="toggleSenha('confirmar_senha')"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                            👁️
+                        </button>
+                    </div>
+                </div>
+
+                <button
+                    type="submit"
+                    id="btn-salvar"
+                    class="w-full bg-ru-green hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
+                    onclick="setLoading(this)"
+                >
+                    <span class="btn-text">Salvar e Continuar</span>
+                    <span class="btn-loading hidden">
+                        <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                        </svg>
+                        Salvando...
+                    </span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function validarSenhaPA() {
+    const senha = document.getElementById('nova_senha').value;
+    const confirmar = document.getElementById('confirmar_senha').value;
+
+    atualizarReq('req-len', senha.length >= 8);
+    atualizarReq('req-upper', /[A-Z]/.test(senha));
+    atualizarReq('req-num', /[0-9]/.test(senha));
+    atualizarReq('req-match', senha.length > 0 && senha === confirmar);
+}
+
+function atualizarReq(id, ok) {
+    const el = document.getElementById(id);
+    const icon = el.querySelector('.req-icon');
+    if (ok) {
+        icon.textContent = '✅';
+        el.classList.add('text-green-600');
+        el.classList.remove('text-gray-600');
+    } else {
+        icon.textContent = '⬜';
+        el.classList.remove('text-green-600');
+        el.classList.add('text-gray-600');
+    }
+}
+</script>
+{% endblock %}

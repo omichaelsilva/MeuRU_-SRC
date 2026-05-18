@@ -1,0 +1,348 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — MEU RU{% endblock %}
+
+{% block body %}
+<!-- Navbar -->
+<nav style="background-color: #1A1A1A;" class="shadow-lg">
+    <div class="max-w-5xl mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+            <div class="flex items-center gap-3">
+                <img src="/static/img/favicon.png" alt="UFCAT" class="w-7 h-7">
+                <span class="text-white font-bold text-base tracking-widest uppercase">Meu RU</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-gray-400 text-sm hidden sm:block">{{ aluno.nome.split()[0] }}</span>
+                <button onclick="toggleDarkMode()" class="dm-icon text-gray-400 hover:text-white transition p-1.5 rounded-lg hover:bg-white/10"></button>
+                <form method="POST" action="/aluno/logout">
+                    <button type="submit"
+                        class="text-xs font-medium px-3 py-1.5 rounded-lg border transition"
+                        style="color: #F47920; border-color: #F4792033;"
+                        onmouseover="this.style.backgroundColor='#F4792011'"
+                        onmouseout="this.style.backgroundColor='transparent'">
+                        Sair
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<main class="max-w-5xl mx-auto px-4 py-8">
+
+    <!-- Saudação -->
+    <div class="mb-8">
+        <p class="text-gray-400 text-sm font-medium">Bem-vindo de volta,</p>
+        <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight mt-0.5">
+            {{ aluno.nome.split()[0] }}
+        </h1>
+    </div>
+
+    {% if request.query_params.get('msg') == 'recarga_ok' %}
+    <div id="msg-sucesso" class="mb-6 p-4 bg-green-50 border border-green-100 rounded-2xl text-green-700 flex items-center gap-2 text-sm">
+        ✅ Recarga realizada com sucesso!
+    </div>
+    {% endif %}
+    {% if request.query_params.get('msg') == 'refeicao_ok' %}
+    <div id="msg-sucesso" class="mb-6 p-4 bg-green-50 border border-green-100 rounded-2xl text-green-700 flex items-center gap-2 text-sm">
+        ✅ Refeição registrada com sucesso!
+    </div>
+    {% endif %}
+    {% if request.query_params.get('erro') == 'valor_invalido' %}
+    <div class="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 flex items-center gap-2 text-sm">
+        ⚠️ Valor inválido. Informe um valor entre R$ 0,01 e R$ 500,00.
+    </div>
+    {% endif %}
+    {% if request.query_params.get('erro') == 'saldo_insuficiente' %}
+    <div class="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 flex items-center gap-2 text-sm">
+        ⚠️ Saldo insuficiente para registrar esta refeição.
+    </div>
+    {% endif %}
+
+    {% if status_pico.em_pico %}
+    <div class="mb-6 flex items-start gap-3 px-5 py-4 rounded-2xl border border-orange-200 bg-orange-50">
+        <span class="text-2xl mt-0.5">⚠️</span>
+        <div>
+            <p class="font-bold text-orange-700 text-sm">RU com movimento intenso agora</p>
+            <p class="text-orange-600 text-sm mt-0.5">
+                Há <strong>{{ status_pico.acessos }}</strong> entradas nos últimos <strong>{{ status_pico.janela_min }} minutos</strong>.
+                Se possível, aguarde um pouco para evitar filas.
+            </p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Card Principal -->
+    <div class="card-saldo rounded-2xl p-7 mb-6 relative overflow-hidden">
+        <div class="absolute -right-8 -top-8 w-40 h-40 rounded-full opacity-10" style="background: white;"></div>
+        <div class="absolute -right-2 -bottom-12 w-56 h-56 rounded-full opacity-10" style="background: white;"></div>
+
+        {% if aluno.categoria.value == 'bolsista' %}
+        <!-- Bolsista: sem saldo, acesso gratuito -->
+        <div class="inline-flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-full mb-4 uppercase tracking-wide" style="color: white; background-color: rgba(0,0,0,0.50);">
+            🎓 Bolsista
+        </div>
+        <p class="text-4xl font-extrabold text-white tracking-tight mb-1">Acesso gratuito</p>
+        <p class="text-white/60 text-sm mb-6">suas refeições não têm custo</p>
+        <button onclick="abrirModal('modal-refeicao')"
+            class="inline-flex items-center gap-2 bg-white font-bold text-sm px-5 py-2.5 rounded-xl transition hover:bg-white/90"
+            style="color: #F47920;">
+            🍽️ Registrar refeição
+        </button>
+
+        {% else %}
+        <!-- Demais categorias: exibe saldo e botões -->
+        <div class="inline-flex items-center gap-2 bg-white/15 text-white/80 text-xs font-semibold px-3 py-1 rounded-full mb-3 uppercase tracking-wide">
+            {% if aluno.categoria.value == 'subsidiado' %}🏷️ Subsidiado — R$ {{ custo_refeicao }}/refeição
+            {% elif aluno.categoria.value == 'externo' %}🏷️ Externo — R$ {{ custo_refeicao }}/refeição
+            {% else %}🏷️ Aluno — R$ {{ custo_refeicao }}/refeição{% endif %}
+        </div>
+        <p class="text-white/70 text-xs font-semibold uppercase tracking-widest mb-1">Saldo disponível</p>
+        <p class="text-5xl font-extrabold text-white tracking-tight mb-1">
+            R$ {{ creditos_formatado }}
+        </p>
+        <p class="text-white/60 text-sm mb-6">créditos para uso no restaurante</p>
+
+        {% if aluno.creditos < 2 %}
+        <div class="inline-flex items-center gap-1.5 bg-white/15 text-white text-xs font-medium px-3 py-1.5 rounded-full mb-4">
+            ⚠️ Saldo baixo — recarregue logo
+        </div>
+        {% endif %}
+
+        <div class="flex flex-wrap gap-3">
+            <button onclick="abrirModal('modal-recarga')"
+                class="inline-flex items-center gap-2 bg-white font-bold text-sm px-5 py-2.5 rounded-xl transition hover:bg-white/90"
+                style="color: #F47920;">
+                + Recarregar créditos
+            </button>
+            <button onclick="abrirModal('modal-refeicao')"
+                class="inline-flex items-center gap-2 bg-white/20 border border-white/40 text-white font-bold text-sm px-5 py-2.5 rounded-xl transition hover:bg-white/30">
+                🍽️ Registrar refeição
+            </button>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Cards de métricas -->
+    <div class="grid grid-cols-2 gap-4 mb-8">
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Este mês</p>
+            <p class="text-3xl font-extrabold text-gray-900">{{ refeicoes_mes }}</p>
+            <p class="text-gray-400 text-xs mt-1">refeições realizadas</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Histórico</p>
+            <a href="/aluno/historico"
+               class="inline-flex items-center gap-1 text-sm font-bold mt-2 transition"
+               style="color: #F47920;">
+                Ver tudo →
+            </a>
+            <p class="text-gray-400 text-xs mt-1">todas as refeições</p>
+        </div>
+    </div>
+
+    <!-- Gráfico de uso semanal -->
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-6">
+        <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wide mb-5">Uso Semanal</h2>
+        {% if dados_semanas %}
+        <div style="height: 200px;">
+            <canvas id="grafico-semanas"></canvas>
+        </div>
+        {% else %}
+        <div class="py-10 text-center text-gray-300">
+            <p class="text-3xl mb-2">📊</p>
+            <p class="text-sm">Nenhuma refeição registrada ainda.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Últimas refeições -->
+    {% if ultimas_refeicoes %}
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-50 flex items-center justify-between">
+            <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wide">Últimas Refeições</h2>
+            <a href="/aluno/historico" class="text-xs font-bold transition" style="color: #F47920;">Ver todas →</a>
+        </div>
+        <div class="divide-y divide-gray-50">
+            {% for r in ultimas_refeicoes %}
+            <div class="px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm"
+                         style="background-color: #FFF0E0;">
+                        {% if r.tipo.value == 'almoco' %}🌞{% else %}🌙{% endif %}
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-gray-800">
+                            {% if r.tipo.value == 'almoco' %}Almoço{% else %}Jantar{% endif %}
+                        </p>
+                        <p class="text-xs text-gray-400">{{ r.data_hora.strftime('%d/%m/%Y às %H:%M') }}</p>
+                    </div>
+                </div>
+                {% if r.creditos_utilizados == 0 %}
+                <span class="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">Gratuita</span>
+                {% else %}
+                <span class="text-sm font-bold" style="color: #E03D3D;">
+                    - R$ {{ "%.2f"|format(r.creditos_utilizados|float) | replace('.', ',') }}
+                </span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Modal de refeição -->
+    <div id="modal-refeicao" class="hidden fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+            <div class="h-1 w-full" style="background: linear-gradient(90deg, #F47920, #E03D3D);"></div>
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-5">
+                    <h3 class="text-lg font-bold text-gray-900">Registrar refeição</h3>
+                    <button onclick="fecharModal('modal-refeicao')"
+                        class="text-gray-300 hover:text-gray-500 text-2xl leading-none transition">&times;</button>
+                </div>
+                {% if aluno.categoria.value == 'bolsista' %}
+                <div class="flex items-center gap-2 mb-5 p-3 bg-green-50 border border-green-100 rounded-xl text-green-700 text-sm font-medium">
+                    🎓 Bolsista — refeição gratuita
+                </div>
+                {% else %}
+                <p class="text-sm text-gray-400 mb-1">
+                    Saldo atual: <strong class="font-bold" style="color: #F47920;">R$ {{ creditos_formatado }}</strong>
+                </p>
+                <p class="text-sm text-gray-400 mb-5">
+                    Custo: <strong class="font-bold text-gray-700">R$ {{ custo_refeicao }}</strong>
+                </p>
+                {% endif %}
+                <form method="POST" action="/aluno/registrar-refeicao" id="form-refeicao">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div class="mb-5">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                            Tipo de refeição
+                        </label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="flex flex-col items-center gap-2 p-4 border-2 rounded-xl cursor-pointer transition has-[:checked]:border-orange-400 has-[:checked]:bg-orange-50 border-gray-200 hover:border-orange-200">
+                                <input type="radio" name="tipo" value="almoco" checked class="hidden">
+                                <span class="text-3xl">🌞</span>
+                                <span class="text-sm font-semibold text-gray-700">Almoço</span>
+                            </label>
+                            <label class="flex flex-col items-center gap-2 p-4 border-2 rounded-xl cursor-pointer transition has-[:checked]:border-orange-400 has-[:checked]:bg-orange-50 border-gray-200 hover:border-orange-200">
+                                <input type="radio" name="tipo" value="jantar" class="hidden">
+                                <span class="text-3xl">🌙</span>
+                                <span class="text-sm font-semibold text-gray-700">Jantar</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <button type="button" onclick="fecharModal('modal-refeicao')"
+                            class="flex-1 py-3 border border-gray-200 rounded-xl text-gray-500 hover:bg-gray-50 transition text-sm font-medium">
+                            Cancelar
+                        </button>
+                        <button type="submit" id="btn-confirmar-refeicao"
+                            class="btn-gradient flex-1 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 text-sm"
+                            onclick="setLoading(this)">
+                            <span class="btn-text">Confirmar</span>
+                            <span class="btn-loading hidden">
+                                <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                </svg>
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de recarga -->
+    <div id="modal-recarga" class="hidden fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+            <div class="h-1 w-full" style="background: linear-gradient(90deg, #F47920, #E03D3D);"></div>
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-5">
+                    <h3 class="text-lg font-bold text-gray-900">Recarregar créditos</h3>
+                    <button onclick="fecharModal('modal-recarga')"
+                        class="text-gray-300 hover:text-gray-500 text-2xl leading-none transition">&times;</button>
+                </div>
+                <p class="text-sm text-gray-400 mb-5">
+                    Saldo atual: <strong class="font-bold" style="color: #F47920;">R$ {{ creditos_formatado }}</strong>
+                </p>
+                <form method="POST" action="/aluno/recarregar" id="form-recarga">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div class="mb-5">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                            Valor (R$)
+                        </label>
+                        <input
+                            type="number"
+                            name="valor"
+                            id="valor-recarga"
+                            min="1" max="500" step="0.01"
+                            placeholder="Ex: 50.00"
+                            required
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 text-lg font-bold focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition"
+                        >
+                        <p class="text-xs text-gray-300 mt-1.5">Mínimo R$ 1,00 · Máximo R$ 500,00</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button type="button" onclick="fecharModal('modal-recarga')"
+                            class="flex-1 py-3 border border-gray-200 rounded-xl text-gray-500 hover:bg-gray-50 transition text-sm font-medium">
+                            Cancelar
+                        </button>
+                        <button type="submit" id="btn-confirmar-recarga"
+                            class="btn-gradient flex-1 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 text-sm"
+                            onclick="setLoading(this)">
+                            <span class="btn-text">Confirmar</span>
+                            <span class="btn-loading hidden">
+                                <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                </svg>
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const msgSucesso = document.getElementById('msg-sucesso');
+if (msgSucesso) setTimeout(() => msgSucesso.remove(), 4000);
+{% if dados_semanas %}
+const ctx = document.getElementById('grafico-semanas').getContext('2d');
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: {{ labels_semanas | tojson }},
+        datasets: [{
+            label: 'Refeições',
+            data: {{ dados_semanas | tojson }},
+            backgroundColor: 'rgba(244, 121, 32, 0.15)',
+            borderColor: 'rgba(244, 121, 32, 1)',
+            borderWidth: 2,
+            borderRadius: 8,
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: { stepSize: 1, color: '#9CA3AF', font: { family: 'Inter' } },
+                grid: { color: 'rgba(0,0,0,0.04)' }
+            },
+            x: {
+                grid: { display: false },
+                ticks: { color: '#9CA3AF', font: { family: 'Inter' } }
+            }
+        }
+    }
+});
+{% endif %}
+</script>
+{% endblock %}

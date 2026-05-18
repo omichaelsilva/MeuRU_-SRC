@@ -1,0 +1,112 @@
+﻿{% extends "base.html" %}
+{% block title %}Histórico Geral — MEU RU{% endblock %}
+
+{% block body %}
+{% include "admin/_navbar.html" %}
+
+<main class="max-w-5xl mx-auto px-4 py-8">
+
+    <div class="mb-6">
+        <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Histórico Geral de Refeições</h1>
+        <p class="text-gray-400 text-sm mt-1">{{ total }} registro{% if total != 1 %}s{% endif %} encontrado{% if total != 1 %}s{% endif %}</p>
+    </div>
+
+    <!-- Filtros -->
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6">
+        <form method="GET" action="/admin/historico" class="flex flex-wrap gap-3 items-end">
+            <div class="flex-1 min-w-40">
+                <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Aluno</label>
+                <input type="text" name="aluno_busca" value="{{ aluno_busca }}" placeholder="Nome ou matrícula..."
+                    class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Tipo</label>
+                <select name="tipo"
+                    class="px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100">
+                    <option value="todos" {% if tipo == 'todos' %}selected{% endif %}>Todos</option>
+                    <option value="almoco" {% if tipo == 'almoco' %}selected{% endif %}>Almoço</option>
+                    <option value="jantar" {% if tipo == 'jantar' %}selected{% endif %}>Jantar</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Data início</label>
+                <input type="date" name="data_inicio" value="{{ data_inicio }}"
+                    class="px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Data fim</label>
+                <input type="date" name="data_fim" value="{{ data_fim }}"
+                    class="px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100">
+            </div>
+            <div class="flex gap-2">
+                <button type="submit"
+                    class="btn-gradient px-4 py-2.5 text-white text-sm font-semibold rounded-xl">
+                    Filtrar
+                </button>
+                <a href="/admin/historico"
+                    class="px-4 py-2.5 bg-gray-100 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-200 transition">
+                    Limpar
+                </a>
+                <a href="/admin/historico?tipo={{ tipo }}&data_inicio={{ data_inicio }}&data_fim={{ data_fim }}&aluno_busca={{ aluno_busca }}&exportar=csv"
+                    class="px-4 py-2.5 bg-gray-800 text-white rounded-xl text-sm font-medium hover:bg-gray-700 transition flex items-center gap-1">
+                    📥 CSV
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Lista -->
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        {% if registros %}
+        <div class="divide-y divide-gray-50">
+            {% for ref, al in registros %}
+            <div class="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm flex-shrink-0"
+                         style="background-color: #FFF0E0;">
+                        {% if ref.tipo.value == 'almoco' %}🌞{% else %}🌙{% endif %}
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-gray-800">
+                            {% if ref.tipo.value == 'almoco' %}Almoço{% else %}Jantar{% endif %}
+                            <span class="text-gray-400 font-normal">·</span>
+                            <a href="/admin/alunos/{{ al.id }}" class="text-gray-500 font-mono text-xs hover:underline">{{ al.matricula }}</a>
+                        </p>
+                        <p class="text-xs text-gray-700 font-medium">{{ al.nome }}</p>
+                        <p class="text-xs text-gray-400">{{ ref.data_hora.strftime('%d/%m/%Y às %H:%M') }}</p>
+                    </div>
+                </div>
+                <span class="text-sm font-bold" style="color: #E03D3D;">
+                    - R$ {{ "%.2f"|format(ref.creditos_utilizados|float) | replace('.', ',') }}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="py-20 text-center text-gray-300">
+            <p class="text-4xl mb-3">📋</p>
+            <p class="text-sm">Nenhum registro encontrado com os filtros aplicados.</p>
+        </div>
+        {% endif %}
+
+        <!-- Paginação -->
+        {% if total_paginas > 1 %}
+        <div class="px-6 py-4 border-t border-gray-50 flex items-center justify-between text-sm">
+            <p class="text-gray-400 text-xs">
+                Página {{ pagina }} de {{ total_paginas }}
+            </p>
+            <div class="flex gap-2">
+                {% if pagina > 1 %}
+                <a href="?pagina={{ pagina - 1 }}&tipo={{ tipo }}&data_inicio={{ data_inicio }}&data_fim={{ data_fim }}&aluno_busca={{ aluno_busca }}"
+                   class="px-3 py-1.5 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 text-xs font-medium transition">← Anterior</a>
+                {% endif %}
+                {% if pagina < total_paginas %}
+                <a href="?pagina={{ pagina + 1 }}&tipo={{ tipo }}&data_inicio={{ data_inicio }}&data_fim={{ data_fim }}&aluno_busca={{ aluno_busca }}"
+                   class="btn-gradient px-3 py-1.5 rounded-lg text-white text-xs font-medium">Próxima →</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}

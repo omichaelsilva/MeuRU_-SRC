@@ -1,0 +1,172 @@
+/* Estilos customizados — complementa o Tailwind CSS */
+
+:root {
+    --ru-orange: #F47920;
+    --ru-orange-dark: #D4640A;
+    --ru-green: #2DCB83;
+    --ru-red: #E03D3D;
+    --ru-dark: #1A1A1A;
+    --ru-gradient: linear-gradient(135deg, #F47920 0%, #E03D3D 100%);
+}
+
+* { box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; }
+
+/* ─── Scrollbar ───────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #d1d1d1; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #b1b1b1; }
+
+html.dark ::-webkit-scrollbar-track { background: #1a1a1a; }
+html.dark ::-webkit-scrollbar-thumb { background: #3a3a3a; }
+
+/* ─── Toast ───────────────────────────────────────────────────── */
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to   { transform: translateX(0);   opacity: 1; }
+}
+@keyframes slideOut {
+    from { transform: translateX(0);   opacity: 1; }
+    to   { transform: translateX(100%); opacity: 0; }
+}
+.toast { animation: slideIn 0.3s ease forwards; }
+.toast.saindo { animation: slideOut 0.3s ease forwards; }
+
+/* ─── Spinner ─────────────────────────────────────────────────── */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+.animate-spin { animation: spin 1s linear infinite; }
+
+/* ─── Botão gradiente ─────────────────────────────────────────── */
+.btn-gradient {
+    background: var(--ru-gradient);
+    transition: opacity 0.2s ease;
+}
+.btn-gradient:hover { opacity: 0.88; }
+.btn-gradient:active { opacity: 0.80; }
+
+/* ─── Card saldo ──────────────────────────────────────────────── */
+.card-saldo { background: var(--ru-gradient); color: white; }
+
+/* ─── Badges ──────────────────────────────────────────────────── */
+.badge-super-admin { background: #FFF0E0; color: #D4640A; }
+.badge-admin       { background: #FFF0E0; color: #F47920; }
+.badge-operador    { background: #f3f4f6; color: #374151; }
+
+/* ─── Input focus ─────────────────────────────────────────────── */
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--ru-orange);
+    outline-offset: 2px;
+}
+
+@media (max-width: 640px) { table { font-size: 0.78rem; } }
+
+
+/* ══════════════════════════════════════════════════════════════ */
+/*  DARK MODE                                                     */
+/* ══════════════════════════════════════════════════════════════ */
+
+/* Superfícies */
+html.dark .bg-white            { background-color: #1E1E1E !important; }
+html.dark .bg-gray-50          { background-color: #161616 !important; }
+html.dark .bg-gray-100         { background-color: #2A2A2A !important; }
+html.dark .bg-gray-200         { background-color: #333333 !important; }
+
+/* Hover de superfícies */
+html.dark .hover\:bg-gray-50:hover   { background-color: #252525 !important; }
+html.dark .hover\:bg-gray-100:hover  { background-color: #2A2A2A !important; }
+html.dark .hover\:bg-gray-200:hover  { background-color: #333333 !important; }
+html.dark .hover\:bg-orange-50\/30:hover { background-color: rgba(244,121,32,0.08) !important; }
+
+/* Textos */
+html.dark .text-gray-900 { color: #F5F5F5 !important; }
+html.dark .text-gray-800 { color: #E5E5E5 !important; }
+html.dark .text-gray-700 { color: #D4D4D4 !important; }
+html.dark .text-gray-600 { color: #A3A3A3 !important; }
+html.dark .text-gray-500 { color: #737373 !important; }
+html.dark .text-gray-400 { color: #555555 !important; }
+
+/* Bordas */
+html.dark .border-gray-100 { border-color: #2A2A2A !important; }
+html.dark .border-gray-200 { border-color: #333333 !important; }
+html.dark .border-gray-300 { border-color: #404040 !important; }
+
+/* Divisórias */
+html.dark .divide-y > * + *       { border-color: #2A2A2A !important; }
+html.dark .divide-gray-50 > * + * { border-color: #2A2A2A !important; }
+html.dark .border-t                { border-color: #2A2A2A !important; }
+html.dark .border-b                { border-color: #2A2A2A !important; }
+
+/* Inputs e selects */
+html.dark input:not([type=hidden]),
+html.dark select,
+html.dark textarea {
+    background-color: #2A2A2A !important;
+    border-color: #3A3A3A !important;
+    color: #F5F5F5 !important;
+}
+html.dark input::placeholder { color: #555555 !important; }
+html.dark input:focus,
+html.dark select:focus {
+    border-color: #F47920 !important;
+    box-shadow: 0 0 0 3px rgba(244,121,32,0.15) !important;
+}
+
+/* Tabela */
+html.dark thead,
+html.dark .bg-gray-50.border-b { background-color: #252525 !important; }
+
+/* Sombras */
+html.dark .shadow-sm  { box-shadow: 0 1px 3px rgba(0,0,0,0.5) !important; }
+html.dark .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8) !important; }
+
+/* Alertas */
+html.dark .bg-green-50  { background-color: #052e16 !important; }
+html.dark .bg-red-50    { background-color: #2d0a0a !important; }
+html.dark .bg-yellow-50 { background-color: #2d2000 !important; }
+html.dark .border-green-100 { border-color: #065f46 !important; }
+html.dark .border-red-100   { border-color: #7f1d1d !important; }
+
+/* Badge status */
+html.dark .bg-green-50.text-green-600 { background-color: #052e16 !important; }
+html.dark .bg-red-50.text-red-500     { background-color: #2d0a0a !important; }
+
+/* Página de login — fundo do card */
+html.dark .rounded-2xl.shadow-2xl.overflow-hidden { background-color: #1E1E1E !important; }
+
+/* Linha de separação do card de login */
+html.dark .border-gray-100.pt-4 { border-color: #2A2A2A !important; }
+
+/* ─── Admin: hovers de linhas de tabela ───────────────────────── */
+html.dark .hover\:bg-blue-50:hover  { background-color: #252525 !important; }
+html.dark .hover\:bg-gray-100:hover { background-color: #2A2A2A !important; }
+
+/* ─── Badges coloridos ────────────────────────────────────────── */
+html.dark .bg-orange-100  { background-color: #3D2200 !important; }
+html.dark .text-orange-700 { color: #fb923c !important; }
+
+html.dark .bg-indigo-100  { background-color: #1E1B3A !important; }
+html.dark .text-indigo-700 { color: #818cf8 !important; }
+
+html.dark .bg-green-100   { background-color: #052e16 !important; }
+html.dark .text-green-700 { color: #4ade80 !important; }
+
+html.dark .bg-red-100     { background-color: #2d0a0a !important; }
+html.dark .text-red-700   { color: #f87171 !important; }
+
+html.dark .bg-blue-100    { background-color: #0c1a2e !important; }
+html.dark .text-blue-600  { color: #60a5fa !important; }
+html.dark .text-blue-700  { color: #60a5fa !important; }
+
+html.dark .bg-purple-100  { background-color: #1e1030 !important; }
+html.dark .text-purple-700 { color: #c084fc !important; }
+
+/* ─── Texto amarelo (primeiro acesso pendente) ────────────────── */
+html.dark .text-yellow-600 { color: #facc15 !important; }
+
+/* ─── Bordas de alertas ───────────────────────────────────────── */
+html.dark .border-red-200   { border-color: #7f1d1d !important; }
+html.dark .border-green-200 { border-color: #065f46 !important; }

@@ -1,0 +1,85 @@
+<nav style="background-color: #1A1A1A;" class="shadow-lg">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+
+            <!-- Logo -->
+            <div class="flex items-center gap-3">
+                <img src="/static/img/favicon.png" alt="UFCAT" class="w-7 h-7">
+                <span class="text-white font-bold text-base tracking-widest uppercase">Meu RU
+                    <span class="text-xs font-normal ml-1 normal-case tracking-normal" style="color: #F4792099;">Admin</span>
+                </span>
+            </div>
+
+            <!-- Links desktop -->
+            <div class="hidden md:flex items-center gap-1">
+                <a href="/admin/dashboard"
+                   class="px-4 py-2 rounded-lg text-sm font-medium transition
+                          {% if request.url.path == '/admin/dashboard' %}text-white bg-white/10{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+                    Dashboard
+                </a>
+                <a href="/admin/alunos"
+                   class="px-4 py-2 rounded-lg text-sm font-medium transition
+                          {% if '/admin/alunos' in request.url.path %}text-white bg-white/10{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+                    Alunos
+                </a>
+                <a href="/admin/historico"
+                   class="px-4 py-2 rounded-lg text-sm font-medium transition
+                          {% if request.url.path == '/admin/historico' %}text-white bg-white/10{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+                    Histórico
+                </a>
+                <a href="/admin/satisfacao"
+                   class="px-4 py-2 rounded-lg text-sm font-medium transition
+                          {% if request.url.path == '/admin/satisfacao' %}text-white bg-white/10{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+                    Satisfação
+                </a>
+                <a href="/admin/cardapio"
+                   class="px-4 py-2 rounded-lg text-sm font-medium transition
+                          {% if request.url.path == '/admin/cardapio' %}text-white bg-white/10{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+                    Cardápio
+                </a>
+                {% if admin.role.value == 'super_admin' %}
+                <a href="/admin/admins"
+                   class="px-4 py-2 rounded-lg text-sm font-medium transition
+                          {% if request.url.path == '/admin/admins' %}text-white bg-white/10{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+                    Admins
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Usuário + logout -->
+            <div class="flex items-center gap-3">
+                <div class="hidden sm:flex flex-col items-end">
+                    <span class="text-white text-sm font-medium leading-none">{{ admin.nome.split()[0] }}</span>
+                    <span class="text-xs mt-0.5" style="color: #F4792099;">{{ admin.role.value | replace('_', ' ') }}</span>
+                </div>
+                <button onclick="toggleDarkMode()" class="dm-icon text-gray-400 hover:text-white transition p-1.5 rounded-lg hover:bg-white/10"></button>
+                <form method="POST" action="/admin/logout">
+                    <button type="submit"
+                        class="text-xs font-medium px-3 py-1.5 rounded-lg border transition"
+                        style="color: #F47920; border-color: #F4792033;"
+                        onmouseover="this.style.backgroundColor='#F4792011'"
+                        onmouseout="this.style.backgroundColor='transparent'">
+                        Sair
+                    </button>
+                </form>
+                <button onclick="toggleMenuMobile()" class="md:hidden text-gray-400 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menu mobile -->
+    <div id="menu-mobile" class="hidden md:hidden px-4 pb-4" style="background-color: #111111;">
+        <a href="/admin/dashboard" class="block text-gray-300 py-2.5 text-sm border-b border-white/5">Dashboard</a>
+        <a href="/admin/alunos" class="block text-gray-300 py-2.5 text-sm border-b border-white/5">Alunos</a>
+        <a href="/admin/historico" class="block text-gray-300 py-2.5 text-sm border-b border-white/5">Histórico</a>
+        <a href="/admin/satisfacao" class="block text-gray-300 py-2.5 text-sm border-b border-white/5">Satisfação</a>
+        <a href="/admin/cardapio" class="block text-gray-300 py-2.5 text-sm border-b border-white/5">Cardápio</a>
+        {% if admin.role.value == 'super_admin' %}
+        <a href="/admin/admins" class="block text-gray-300 py-2.5 text-sm">Admins</a>
+        {% endif %}
+    </div>
+</nav>

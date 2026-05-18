@@ -1,0 +1,45 @@
+# Ambiente virtual Python
+venv/
+.venv/
+env/
+.env/
+
+# Variáveis de ambiente (NUNCA commitar credenciais)
+.env
+*.env
+!.env.example
+
+# Banco de dados SQLite
+*.db
+*.sqlite3
+
+# Cache Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Distribuição / empacotamento
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Logs
+*.log
+logs/
+
+# IDE e editores
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Claude Code
+.claude/settings.local.json

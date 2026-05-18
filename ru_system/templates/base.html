@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MEU RU{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sienna-accessibility@latest/dist/sienna-accessibility.umd.js" defer></script>
+    <link rel="icon" type="image/png" href="/static/img/favicon.png">
+    <link rel="stylesheet" href="/static/css/custom.css">
+    <!-- Aplica tema ANTES de renderizar para evitar flash -->
+    <script>
+        (function() {
+            if (localStorage.getItem('ru-theme') === 'dark') {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        'ru-blue':        '#F47920',
+                        'ru-orange':      '#F47920',
+                        'ru-orange-dark': '#D4640A',
+                        'ru-green':       '#2DCB83',
+                        'ru-red':         '#E03D3D',
+                        'ru-dark':        '#1A1A1A',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 dark:bg-neutral-900 min-h-screen font-sans antialiased transition-colors duration-200">
+
+<div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2"></div>
+
+{% block body %}{% endblock %}
+
+<script src="/static/js/app.js"></script>
+{% block scripts %}{% endblock %}
+
+<!-- VLibras -->
+<div vw class="enabled">
+    <div vw-access-button class="active"></div>
+    <div vw-plugin-wrapper>
+        <div class="vw-plugin-top-wrapper"></div>
+    </div>
+</div>
+<script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+<script>
+    new window.VLibras.Widget('https://vlibras.gov.br/app');
+</script>
+</body>
+</html>

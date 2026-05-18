@@ -1,0 +1,139 @@
+﻿{% extends "base.html" %}
+{% block title %}Admins — MEU RU{% endblock %}
+
+{% block body %}
+{% include "admin/_navbar.html" %}
+
+<main class="max-w-5xl mx-auto px-4 py-8">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Gerenciar Admins</h1>
+        <button onclick="abrirModal('modal-criar-admin')"
+            class="bg-ru-blue text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition font-medium">
+            + Novo Admin
+        </button>
+    </div>
+
+    {% if sucesso %}
+    <div id="msg-sucesso" class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+        ✅ {{ sucesso | replace('+', ' ') }}
+    </div>
+    {% endif %}
+    {% if erro %}
+    <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+        ⚠️ {{ erro | replace('+', ' ') }}
+    </div>
+    {% endif %}
+
+    <!-- Tabela de admins -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                        <th class="text-left px-6 py-3 text-gray-500 font-medium">Nome</th>
+                        <th class="text-left px-6 py-3 text-gray-500 font-medium hidden md:table-cell">Email</th>
+                        <th class="text-center px-6 py-3 text-gray-500 font-medium">Função</th>
+                        <th class="text-center px-6 py-3 text-gray-500 font-medium">Status</th>
+                        <th class="text-center px-6 py-3 text-gray-500 font-medium">Ação</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for a in admins %}
+                    <tr class="{% if loop.index is odd %}bg-white{% else %}bg-gray-50{% endif %} hover:bg-gray-100 transition">
+                        <td class="px-6 py-4 font-medium text-gray-800">
+                            {{ a.nome }}
+                            {% if a.id == admin.id %}
+                            <span class="bg-blue-100 text-blue-600 text-xs px-2 py-0.5 rounded ml-1">Você</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-gray-500 hidden md:table-cell">{{ a.email }}</td>
+                        <td class="px-6 py-4 text-center">
+                            {% if a.role.value == 'super_admin' %}
+                            <span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs font-medium">Super Admin</span>
+                            {% elif a.role.value == 'admin' %}
+                            <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-medium">Admin</span>
+                            {% else %}
+                            <span class="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full text-xs font-medium">Operador</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            {% if a.ativo %}
+                            <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs">Ativo</span>
+                            {% else %}
+                            <span class="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs">Inativo</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            {% if a.id != admin.id %}
+                            <form method="POST" action="/admin/admins/{{ a.id }}/toggle-ativo" class="inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit"
+                                    onclick="return confirm('{% if a.ativo %}Desativar{% else %}Ativar{% endif %} {{ a.nome }}?')"
+                                    class="text-xs {% if a.ativo %}text-red-600 hover:underline{% else %}text-green-600 hover:underline{% endif %}">
+                                    {% if a.ativo %}Desativar{% else %}Ativar{% endif %}
+                                </button>
+                            </form>
+                            {% else %}
+                            <span class="text-gray-300 text-xs">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Modal Criar Admin -->
+<div id="modal-criar-admin" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-5">Criar Novo Admin</h2>
+        <form method="POST" action="/admin/admins/criar">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+                <input type="text" name="nome" placeholder="Nome completo" required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ru-blue outline-none">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input type="email" name="email" placeholder="email@ru.edu.br" required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ru-blue outline-none">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+                <input type="password" name="senha" placeholder="Mínimo 8 caracteres" required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ru-blue outline-none">
+            </div>
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Função</label>
+                <select name="role"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ru-blue outline-none">
+                    <option value="operador">Operador</option>
+                    <option value="admin">Admin</option>
+                    <option value="super_admin">Super Admin</option>
+                </select>
+            </div>
+            <div class="flex gap-3">
+                <button type="button" onclick="fecharModal('modal-criar-admin')"
+                    class="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                    Cancelar
+                </button>
+                <button type="submit" onclick="setLoading(this)"
+                    class="flex-1 py-2.5 bg-ru-blue text-white rounded-lg hover:bg-blue-700 transition font-medium">
+                    <span class="btn-text">Criar Admin</span>
+                    <span class="btn-loading hidden">Criando...</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const msgSucesso = document.getElementById('msg-sucesso');
+if (msgSucesso) setTimeout(() => msgSucesso.remove(), 4000);
+</script>
+{% endblock %}
