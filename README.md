@@ -1,7 +1,7 @@
 # Sistema de Recarga e Gerenciamento de créditos digitais (RU) — UFCAT
 
 <p align="center">
-  <img src="Imagens/logo_meuru.png" alt="Meu RU — Restaurante Universitário UFCAT" width="300"/>
+  <img src="Imagens/logo_meuru.svg" alt="Meu RU — Restaurante Universitário UFCAT" width="350"/>
 </p>
 
 <p align="center">
